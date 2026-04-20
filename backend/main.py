@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routes import auth
+from app.routes import announcements
 
 # Create FastAPI app
 app = FastAPI(
@@ -20,6 +21,7 @@ app.add_middleware(
 
 # Include auth routes
 app.include_router(auth.router)
+app.include_router(announcements.router)
 
 
 @app.get("/api/health")

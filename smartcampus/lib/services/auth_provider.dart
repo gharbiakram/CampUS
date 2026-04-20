@@ -7,11 +7,24 @@ class AuthProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
   bool _isLoggedIn = false;
+  bool _initialized = false;
 
   User? get user => _user;
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get isLoggedIn => _isLoggedIn;
+
+  /// Constructor: Initialize session on app startup
+  AuthProvider() {
+    _initializeOnce();
+  }
+
+  /// Initialize only once when app starts
+  void _initializeOnce() async {
+    if (_initialized) return;
+    _initialized = true;
+    await initialize();
+  }
 
   /// Initialize: check if user was previously logged in
   Future<void> initialize() async {
