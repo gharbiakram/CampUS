@@ -50,9 +50,27 @@ _DEMO_ANNOUNCEMENTS = [
 ]
 
 
+def _next_id() -> int:
+    return max((announcement.id for announcement in _DEMO_ANNOUNCEMENTS), default=0) + 1
+
+
 @router.get("", response_model=AnnouncementListResponse)
 async def get_announcements():
     return AnnouncementListResponse(announcements=_DEMO_ANNOUNCEMENTS)
+
+
+@router.post("", response_model=Announcement, status_code=status.HTTP_201_CREATED)
+async def create_announcement(announcement: Announcement):
+    stored = Announcement(
+        id=announcement.id or _next_id(),
+        title=announcement.title,
+        content=announcement.content,
+        author=announcement.author,
+        priority=announcement.priority,
+        created_at=announcement.created_at,
+    )
+    _DEMO_ANNOUNCEMENTS.append(stored)
+    return stored
 
 
 @router.get("/{announcement_id}", response_model=Announcement)

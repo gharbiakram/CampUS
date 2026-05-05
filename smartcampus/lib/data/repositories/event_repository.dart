@@ -3,7 +3,9 @@ import 'dart:convert';
 
 import '../../core/exceptions/app_exception.dart';
 import '../../core/result_model.dart';
+import '../local/daos/sync_queue_dao.dart';
 import '../local/daos/event_dao.dart';
+import '../local/db/app_database.dart';
 import '../../models/event.dart';
 import '../../utils/constants.dart';
 
@@ -11,11 +13,13 @@ import '../../utils/constants.dart';
 class EventRepository {
   final http.Client httpClient;
   final EventDao eventDao;
+  final SyncQueueDao syncQueueDao;
 
   EventRepository({
     required this.httpClient,
     required this.eventDao,
-  });
+    SyncQueueDao? syncQueueDao,
+  }) : syncQueueDao = syncQueueDao ?? SyncQueueDao(AppDatabase());
 
   /// Fetch events from API and cache them
   Future<Result<List<Event>>> fetchEvents({bool forceRefresh = false}) async {
@@ -140,6 +144,18 @@ class EventRepository {
   Future<Result<Event>> addEvent(Event event) async {
     try {
       await eventDao.insertEvents([event]);
+      await syncQueueDao.enqueue(
+        kind: 'event',
+        payload: jsonEncode({
+          'id': event.id,
+          'title': event.title,
+          'description': event.description,
+          'date': event.date.toIso8601String(),
+          'start_time': event.startTime,
+          'end_time': event.endTime,
+          'location': event.location,
+        }),
+      );
       return Success(event);
     } catch (e) {
       return Failure(UnknownException(

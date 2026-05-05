@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../services/campus_sync_service.dart';
 import '../services/auth_provider.dart';
 import '../services/notification_service.dart';
 import '../services/settings_provider.dart';
@@ -119,6 +120,20 @@ class SettingsScreen extends StatelessWidget {
                                 await NotificationService.instance.showTestNotification();
                                 messenger.showSnackBar(
                                   const SnackBar(content: Text('Test notification sent')),
+                                );
+                              },
+                            ),
+                            ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: const Icon(Icons.sync),
+                              title: const Text('Sync Now'),
+                              subtitle: const Text('Flush offline changes and check for updates'),
+                              trailing: const Icon(Icons.chevron_right),
+                              onTap: () async {
+                                final messenger = ScaffoldMessenger.of(context);
+                                await CampusSyncService.instance.syncNow();
+                                messenger.showSnackBar(
+                                  const SnackBar(content: Text('Sync completed')),
                                 );
                               },
                             ),

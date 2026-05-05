@@ -73,66 +73,74 @@ class _TimetableScreenState extends State<TimetableScreen> {
     final shouldCreate = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('New timetable entry'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: subjectController,
-                  decoration: const InputDecoration(labelText: 'Subject'),
-                ),
-                TextField(
-                  controller: instructorController,
-                  decoration: const InputDecoration(labelText: 'Instructor'),
-                ),
-                DropdownButtonFormField<String>(
-                  value: day,
-                  items: const [
-                    DropdownMenuItem(value: 'Monday', child: Text('Monday')),
-                    DropdownMenuItem(value: 'Tuesday', child: Text('Tuesday')),
-                    DropdownMenuItem(value: 'Wednesday', child: Text('Wednesday')),
-                    DropdownMenuItem(value: 'Thursday', child: Text('Thursday')),
-                    DropdownMenuItem(value: 'Friday', child: Text('Friday')),
-                    DropdownMenuItem(value: 'Saturday', child: Text('Saturday')),
-                    DropdownMenuItem(value: 'Sunday', child: Text('Sunday')),
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('New timetable entry'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: subjectController,
+                      decoration: const InputDecoration(labelText: 'Subject'),
+                    ),
+                    TextField(
+                      controller: instructorController,
+                      decoration: const InputDecoration(labelText: 'Instructor'),
+                    ),
+                    DropdownButtonFormField<String>(
+                      initialValue: day,
+                      items: const [
+                        DropdownMenuItem(value: 'Monday', child: Text('Monday')),
+                        DropdownMenuItem(value: 'Tuesday', child: Text('Tuesday')),
+                        DropdownMenuItem(value: 'Wednesday', child: Text('Wednesday')),
+                        DropdownMenuItem(value: 'Thursday', child: Text('Thursday')),
+                        DropdownMenuItem(value: 'Friday', child: Text('Friday')),
+                        DropdownMenuItem(value: 'Saturday', child: Text('Saturday')),
+                        DropdownMenuItem(value: 'Sunday', child: Text('Sunday')),
+                      ],
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() {
+                            day = value;
+                          });
+                        }
+                      },
+                      decoration: const InputDecoration(labelText: 'Day'),
+                    ),
+                    TextField(
+                      controller: roomController,
+                      decoration: const InputDecoration(labelText: 'Room'),
+                    ),
+                    TextField(
+                      controller: startTimeController,
+                      decoration: const InputDecoration(labelText: 'Start time (HH:mm)'),
+                    ),
+                    TextField(
+                      controller: endTimeController,
+                      decoration: const InputDecoration(labelText: 'End time (HH:mm)'),
+                    ),
                   ],
-                  onChanged: (value) {
-                    if (value != null) day = value;
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton(
+                  onPressed: () {
+                    if (subjectController.text.trim().isEmpty || instructorController.text.trim().isEmpty || roomController.text.trim().isEmpty) {
+                      return;
+                    }
+                    Navigator.of(dialogContext).pop(true);
                   },
-                  decoration: const InputDecoration(labelText: 'Day'),
-                ),
-                TextField(
-                  controller: roomController,
-                  decoration: const InputDecoration(labelText: 'Room'),
-                ),
-                TextField(
-                  controller: startTimeController,
-                  decoration: const InputDecoration(labelText: 'Start time (HH:mm)'),
-                ),
-                TextField(
-                  controller: endTimeController,
-                  decoration: const InputDecoration(labelText: 'End time (HH:mm)'),
+                  child: const Text('Create'),
                 ),
               ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () {
-                if (subjectController.text.trim().isEmpty || instructorController.text.trim().isEmpty || roomController.text.trim().isEmpty) {
-                  return;
-                }
-                Navigator.of(dialogContext).pop(true);
-              },
-              child: const Text('Create'),
-            ),
-          ],
+            );
+          },
         );
       },
     );

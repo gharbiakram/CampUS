@@ -3,7 +3,9 @@ import 'dart:convert';
 
 import '../../core/exceptions/app_exception.dart';
 import '../../core/result_model.dart';
+import '../local/daos/sync_queue_dao.dart';
 import '../local/daos/timetable_dao.dart';
+import '../local/db/app_database.dart';
 import '../../models/timetable_item.dart';
 import '../../utils/constants.dart';
 
@@ -11,8 +13,10 @@ import '../../utils/constants.dart';
 class TimetableRepository {
   final http.Client httpClient;
   final TimetableDao timetableDao;
+  final SyncQueueDao syncQueueDao;
 
-  TimetableRepository({required this.httpClient, required this.timetableDao});
+    TimetableRepository({required this.httpClient, required this.timetableDao, SyncQueueDao? syncQueueDao})
+      : syncQueueDao = syncQueueDao ?? SyncQueueDao(AppDatabase());
 
   Future<Result<List<TimetableItem>>> fetchTimetable({bool forceRefresh = false}) async {
     try {
@@ -62,6 +66,18 @@ class TimetableRepository {
   Future<Result<TimetableItem>> addTimetableItem(TimetableItem item) async {
     try {
       await timetableDao.insertItems([item]);
+      await syncQueueDao.enqueue(
+        kind: 'timetable',
+        payload: jsonEncode({
+          'id': item.id,
+          'subject': item.subject,
+          'instructor': item.instructor,
+          'day': item.day,
+          'start_time': item.startTime,
+          'end_time': item.endTime,
+          'room': item.room,
+        }),
+      );
       return Success(item);
     } catch (e) {
       return Failure(UnknownException(message: 'Error adding timetable item: ${e.toString()}'));

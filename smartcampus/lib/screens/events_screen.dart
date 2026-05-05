@@ -87,75 +87,80 @@ class _EventsScreenState extends State<EventsScreen> {
     final shouldCreate = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('New event'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: titleController,
-                  decoration: const InputDecoration(labelText: 'Title'),
-                ),
-                TextField(
-                  controller: descriptionController,
-                  decoration: const InputDecoration(labelText: 'Description'),
-                  minLines: 2,
-                  maxLines: 4,
-                ),
-                TextField(
-                  controller: locationController,
-                  decoration: const InputDecoration(labelText: 'Location'),
-                ),
-                const SizedBox(height: 12),
-                Row(
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('New event'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Expanded(
-                      child: Text('Date: ${selectedDate.toIso8601String().split('T').first}'),
+                    TextField(
+                      controller: titleController,
+                      decoration: const InputDecoration(labelText: 'Title'),
                     ),
-                    TextButton(
-                      onPressed: () async {
-                        final picked = await showDatePicker(
-                          context: dialogContext,
-                          firstDate: DateTime.now().subtract(const Duration(days: 365)),
-                          lastDate: DateTime.now().add(const Duration(days: 365)),
-                          initialDate: selectedDate,
-                        );
-                        if (picked != null) {
-                          selectedDate = picked;
-                          (dialogContext as Element).markNeedsBuild();
-                        }
-                      },
-                      child: const Text('Pick date'),
+                    TextField(
+                      controller: descriptionController,
+                      decoration: const InputDecoration(labelText: 'Description'),
+                      minLines: 2,
+                      maxLines: 4,
+                    ),
+                    TextField(
+                      controller: locationController,
+                      decoration: const InputDecoration(labelText: 'Location'),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text('Date: ${selectedDate.toIso8601String().split('T').first}'),
+                        ),
+                        TextButton(
+                          onPressed: () async {
+                            final picked = await showDatePicker(
+                              context: dialogContext,
+                              firstDate: DateTime.now().subtract(const Duration(days: 365)),
+                              lastDate: DateTime.now().add(const Duration(days: 365)),
+                              initialDate: selectedDate,
+                            );
+                            if (picked != null) {
+                              setState(() {
+                                selectedDate = picked;
+                              });
+                            }
+                          },
+                          child: const Text('Pick date'),
+                        ),
+                      ],
+                    ),
+                    TextField(
+                      controller: startTimeController,
+                      decoration: const InputDecoration(labelText: 'Start time (HH:mm)'),
+                    ),
+                    TextField(
+                      controller: endTimeController,
+                      decoration: const InputDecoration(labelText: 'End time (HH:mm)'),
                     ),
                   ],
                 ),
-                TextField(
-                  controller: startTimeController,
-                  decoration: const InputDecoration(labelText: 'Start time (HH:mm)'),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                  child: const Text('Cancel'),
                 ),
-                TextField(
-                  controller: endTimeController,
-                  decoration: const InputDecoration(labelText: 'End time (HH:mm)'),
+                FilledButton(
+                  onPressed: () {
+                    if (titleController.text.trim().isEmpty || descriptionController.text.trim().isEmpty || locationController.text.trim().isEmpty) {
+                      return;
+                    }
+                    Navigator.of(dialogContext).pop(true);
+                  },
+                  child: const Text('Create'),
                 ),
               ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () {
-                if (titleController.text.trim().isEmpty || descriptionController.text.trim().isEmpty || locationController.text.trim().isEmpty) {
-                  return;
-                }
-                Navigator.of(dialogContext).pop(true);
-              },
-              child: const Text('Create'),
-            ),
-          ],
+            );
+          },
         );
       },
     );

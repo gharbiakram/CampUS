@@ -1,14 +1,21 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'services/announcement_provider.dart';
 import 'services/auth_provider.dart';
+import 'services/campus_sync_service.dart';
 import 'services/event_provider.dart';
 import 'services/timetable_provider.dart';
 import 'services/settings_provider.dart';
+import 'services/notification_service.dart';
 import 'utils/router.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
+  unawaited(NotificationService.instance.initialize());
+  unawaited(CampusSyncService.instance.start());
 }
 
 class MyApp extends StatelessWidget {

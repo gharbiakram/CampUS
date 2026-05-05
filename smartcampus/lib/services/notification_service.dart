@@ -1,4 +1,5 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter/foundation.dart';
 
 class NotificationService {
   NotificationService._();
@@ -21,6 +22,11 @@ class NotificationService {
 
   Future<void> initialize() async {
     if (_initialized) return;
+
+    if (kIsWeb) {
+      _initialized = true;
+      return;
+    }
 
     const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosSettings = DarwinInitializationSettings(
@@ -45,6 +51,8 @@ class NotificationService {
   Future<void> showTestNotification() async {
     await initialize();
 
+    if (kIsWeb) return;
+
     const androidDetails = AndroidNotificationDetails(
       _channelId,
       _channelName,
@@ -66,5 +74,32 @@ class NotificationService {
       'This is a test notification.',
       notificationDetails,
     );
+  }
+
+  Future<void> showUpdateNotification({
+    required int id,
+    required String title,
+    required String body,
+  }) async {
+    await initialize();
+
+    if (kIsWeb) return;
+
+    const androidDetails = AndroidNotificationDetails(
+      _channelId,
+      _channelName,
+      channelDescription: _channelDescription,
+      importance: Importance.high,
+      priority: Priority.high,
+    );
+
+    const iosDetails = DarwinNotificationDetails();
+
+    const notificationDetails = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
+
+    await _plugin.show(id, title, body, notificationDetails);
   }
 }

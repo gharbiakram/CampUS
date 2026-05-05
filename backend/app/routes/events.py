@@ -37,9 +37,28 @@ _DEMO_EVENTS = [
 ]
 
 
+def _next_id() -> int:
+    return max((event.id for event in _DEMO_EVENTS), default=0) + 1
+
+
 @router.get("", response_model=EventListResponse)
 async def get_events():
     return EventListResponse(events=_DEMO_EVENTS)
+
+
+@router.post("", response_model=Event, status_code=status.HTTP_201_CREATED)
+async def create_event(event: Event):
+    stored = Event(
+        id=event.id or _next_id(),
+        title=event.title,
+        description=event.description,
+        location=event.location,
+        date=event.date,
+        start_time=event.start_time,
+        end_time=event.end_time,
+    )
+    _DEMO_EVENTS.append(stored)
+    return stored
 
 
 @router.get("/{event_id}", response_model=Event)

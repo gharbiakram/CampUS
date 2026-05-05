@@ -11,6 +11,7 @@ class AppDatabase {
   static const String events = 'events';
   static const String timetable = 'timetable';
   static const String preferences = 'preferences';
+  static const String syncQueue = 'sync_queue';
 
   static final AppDatabase _instance = AppDatabase._internal();
 
@@ -98,6 +99,15 @@ class AppDatabase {
         value TEXT NOT NULL
       )
     ''');
+
+    await db.execute('''
+      CREATE TABLE $syncQueue (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        kind TEXT NOT NULL,
+        payload TEXT NOT NULL,
+        created_at TEXT NOT NULL
+      )
+    ''');
   }
 
   /// Handle database upgrades
@@ -118,6 +128,7 @@ class AppDatabase {
     await db.delete(events);
     await db.delete(timetable);
     await db.delete(preferences);
+    await db.delete(syncQueue);
   }
 }
 
@@ -130,7 +141,11 @@ class _InMemoryDb {
     final row = Map<String, dynamic>.from(values);
     if (!row.containsKey('id')) row['id'] = _autoId++;
     final idx = t.indexWhere((r) => r['id'] == row['id']);
-    if (idx >= 0) t[idx] = row; else t.add(row);
+    if (idx >= 0) {
+      t[idx] = row;
+    } else {
+      t.add(row);
+    }
     return row['id'] as int;
   }
 

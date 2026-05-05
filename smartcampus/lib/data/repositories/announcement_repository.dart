@@ -3,7 +3,9 @@ import 'dart:convert';
 
 import '../../core/exceptions/app_exception.dart';
 import '../../core/result_model.dart';
+import '../local/daos/sync_queue_dao.dart';
 import '../local/daos/announcement_dao.dart';
+import '../local/db/app_database.dart';
 import '../../models/announcement.dart';
 import '../../utils/constants.dart';
 
@@ -11,11 +13,13 @@ import '../../utils/constants.dart';
 class AnnouncementRepository {
   final http.Client httpClient;
   final AnnouncementDao announcementDao;
+  final SyncQueueDao syncQueueDao;
 
   AnnouncementRepository({
     required this.httpClient,
     required this.announcementDao,
-  });
+    SyncQueueDao? syncQueueDao,
+  }) : syncQueueDao = syncQueueDao ?? SyncQueueDao(AppDatabase());
 
   /// Fetch announcements from API and cache them
   Future<Result<List<Announcement>>> fetchAnnouncements({
@@ -149,6 +153,17 @@ class AnnouncementRepository {
   Future<Result<Announcement>> addAnnouncement(Announcement announcement) async {
     try {
       await announcementDao.insertAnnouncements([announcement]);
+      await syncQueueDao.enqueue(
+        kind: 'announcement',
+        payload: jsonEncode({
+          'id': announcement.id,
+          'title': announcement.title,
+          'content': announcement.content,
+          'author': announcement.author,
+          'priority': announcement.priority,
+          'created_at': announcement.createdAt.toIso8601String(),
+        }),
+      );
       return Success(announcement);
     } catch (e) {
       return Failure(UnknownException(
