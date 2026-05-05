@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
+
+import '../data/repositories/auth_repository.dart';
 import '../models/user.dart';
-import '../services/auth_service.dart';
 
 class AuthProvider extends ChangeNotifier {
+  late final AuthRepository _authRepository;
+
   User? _user;
   bool _isLoading = false;
   String? _error;
@@ -14,78 +19,84 @@ class AuthProvider extends ChangeNotifier {
   String? get error => _error;
   bool get isLoggedIn => _isLoggedIn;
 
-  /// Constructor: Initialize session on app startup
-  AuthProvider() {
+  AuthProvider({AuthRepository? authRepository}) {
+    _authRepository = authRepository ??
+        AuthRepository(
+          httpClient: http.Client(),
+          secureStorage: const FlutterSecureStorage(),
+        );
     _initializeOnce();
   }
 
-  /// Initialize only once when app starts
   void _initializeOnce() async {
     if (_initialized) return;
     _initialized = true;
     await initialize();
   }
 
-  /// Initialize: check if user was previously logged in
   Future<void> initialize() async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      final loggedIn = await AuthService.isLoggedIn();
+      final loggedIn = await _authRepository.isLoggedIn();
       if (loggedIn) {
-        final email = await AuthService.getStoredEmail();
-        final token = await AuthService.getStoredToken();
-        _user = User(email: email ?? '', token: token);
+        final email = await _authRepository.getUserEmail();
+        _user = User(email: email ?? '', name: 'User');
         _isLoggedIn = true;
       }
     } catch (e) {
-      _error = 'Initialization error: $e';
+      _error = 'Initialization error: ${e.toString()}';
     }
 
     _isLoading = false;
     notifyListeners();
   }
 
-  /// Log in with email and password
   Future<bool> login(String email, String password) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
-    try {
-      _user = await AuthService.login(email, password);
-      _isLoggedIn = true;
-      _isLoading = false;
-      notifyListeners();
-      return true;
-    } catch (e) {
-      _error = e.toString();
-      _isLoading = false;
-      notifyListeners();
-      return false;
-    }
+    final result = await _authRepository.login(email, password);
+    result.fold(
+      (failure) {
+        _error = failure.toString();
+        _isLoading = false;
+        notifyListeners();
+      },
+      (user) {
+        _user = user;
+        _isLoggedIn = true;
+        _error = null;
+        _isLoading = false;
+        notifyListeners();
+      },
+    );
+
+    return result.isSuccess;
   }
 
-  /// Log out
   Future<void> logout() async {
     _isLoading = true;
     notifyListeners();
 
-    try {
-      await AuthService.logout();
-      _user = null;
-      _isLoggedIn = false;
-      _error = null;
-    } catch (e) {
-      _error = 'Logout error: $e';
-    }
+    final result = await _authRepository.logout();
+    result.fold(
+      (failure) {
+        _error = 'Logout error: ${failure.toString()}';
+      },
+      (_) {
+        _user = null;
+        _isLoggedIn = false;
+        _error = null;
+      },
+    );
 
     _isLoading = false;
     notifyListeners();
   }
 
-  /// Clear error
   void clearError() {
     _error = null;
     notifyListeners();

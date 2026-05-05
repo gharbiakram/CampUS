@@ -25,4 +25,16 @@ class Announcement {
       createdAt: DateTime.parse(json['created_at'] as String),
     );
   }
+
+  /// Create from database map
+  factory Announcement.fromMap(Map<String, dynamic> map) {
+    return Announcement(
+      id: map['id'] as int,
+      title: map['title'] as String,
+      content: map['content'] as String,
+      author: map['author'] as String,
+      priority: map['priority'] as String,
+      createdAt: DateTime.parse(map['created_at'] as String),
+    );
+  }
 }

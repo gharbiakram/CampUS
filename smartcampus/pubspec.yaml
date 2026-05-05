@@ -53,6 +53,24 @@ dependencies:
 
   # Shared preferences
   shared_preferences: ^2.2.0
+  
+  # Connectivity detection
+  connectivity_plus: ^5.0.0
+  
+  # Notifications
+  flutter_local_notifications: ^17.0.0
+  
+  # Permissions
+  permission_handler: ^11.0.0
+  
+  # Device features
+  local_auth: ^2.1.0
+  geolocator: ^9.0.0
+  image_picker: ^1.0.0
+  sensors_plus: ^2.0.0
+  
+  # Background tasks
+  workmanager: ^0.5.0
 
 dev_dependencies:
   flutter_test:
