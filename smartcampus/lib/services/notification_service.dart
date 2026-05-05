@@ -1,5 +1,6 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/foundation.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class NotificationService {
   NotificationService._();
@@ -44,8 +45,30 @@ class NotificationService {
 
     final androidPlugin = _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
     await androidPlugin?.createNotificationChannel(_channel);
+    await _requestNotificationPermission();
 
     _initialized = true;
+  }
+
+  Future<void> _requestNotificationPermission() async {
+    if (kIsWeb) return;
+
+    try {
+      await Permission.notification.request();
+    } catch (_) {
+      // Keep notifications best-effort; the app should still work if permission is unavailable.
+    }
+  }
+
+  Future<void> showEventCreatedNotification({
+    required int id,
+    required String title,
+  }) async {
+    await showUpdateNotification(
+      id: id,
+      title: 'New event added',
+      body: title,
+    );
   }
 
   Future<void> showTestNotification() async {

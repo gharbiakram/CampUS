@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -5,6 +7,7 @@ import '../data/local/daos/event_dao.dart';
 import '../data/local/db/app_database.dart';
 import '../data/repositories/event_repository.dart';
 import '../models/event.dart';
+import 'notification_service.dart';
 
 class EventProvider extends ChangeNotifier {
   late final EventRepository _eventRepository;
@@ -70,6 +73,12 @@ class EventProvider extends ChangeNotifier {
         _hasLoadedOnce = true;
         _error = null;
         notifyListeners();
+        unawaited(
+          NotificationService.instance.showEventCreatedNotification(
+            id: item.id,
+            title: item.title,
+          ),
+        );
         // Keep the optimistic update visible immediately; background reloads can re-order but should not clear it.
         return true;
       },
