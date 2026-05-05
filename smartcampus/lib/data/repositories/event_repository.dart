@@ -135,4 +135,16 @@ class EventRepository {
   Future<void> clearCache() async {
     await eventDao.deleteAll();
   }
+
+  /// Add a new event locally so it appears immediately offline-first.
+  Future<Result<Event>> addEvent(Event event) async {
+    try {
+      await eventDao.insertEvents([event]);
+      return Success(event);
+    } catch (e) {
+      return Failure(UnknownException(
+        message: 'Error adding event: ${e.toString()}',
+      ));
+    }
+  }
 }

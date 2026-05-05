@@ -28,6 +28,11 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
       appBar: AppBar(
         title: const Text('Announcements'),
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _showCreateDialog(context),
+        icon: const Icon(Icons.add),
+        label: const Text('New announcement'),
+      ),
       body: Consumer<AnnouncementProvider>(
         builder: (context, provider, _) {
           if (provider.isLoading && !provider.hasData) {
@@ -60,6 +65,91 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
           );
         },
       ),
+    );
+  }
+
+  Future<void> _showCreateDialog(BuildContext context) async {
+    final titleController = TextEditingController();
+    final contentController = TextEditingController();
+    final authorController = TextEditingController(text: 'Campus Admin');
+    String priority = 'medium';
+
+    final shouldCreate = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('New announcement'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: titleController,
+                  decoration: const InputDecoration(labelText: 'Title'),
+                ),
+                TextField(
+                  controller: contentController,
+                  decoration: const InputDecoration(labelText: 'Content'),
+                  minLines: 3,
+                  maxLines: 5,
+                ),
+                TextField(
+                  controller: authorController,
+                  decoration: const InputDecoration(labelText: 'Author'),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: priority,
+                  items: const [
+                    DropdownMenuItem(value: 'low', child: Text('Low')),
+                    DropdownMenuItem(value: 'medium', child: Text('Medium')),
+                    DropdownMenuItem(value: 'high', child: Text('High')),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) {
+                      priority = value;
+                    }
+                  },
+                  decoration: const InputDecoration(labelText: 'Priority'),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () {
+                if (titleController.text.trim().isEmpty || contentController.text.trim().isEmpty) {
+                  return;
+                }
+                Navigator.of(dialogContext).pop(true);
+              },
+              child: const Text('Create'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldCreate != true || !context.mounted) return;
+
+    final provider = context.read<AnnouncementProvider>();
+    final announcement = Announcement(
+      id: DateTime.now().millisecondsSinceEpoch,
+      title: titleController.text.trim(),
+      content: contentController.text.trim(),
+      author: authorController.text.trim().isEmpty ? 'Campus Admin' : authorController.text.trim(),
+      priority: priority,
+      createdAt: DateTime.now(),
+    );
+
+    final success = await provider.addAnnouncement(announcement);
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(success ? 'Announcement added.' : 'Could not add announcement.')),
     );
   }
 }

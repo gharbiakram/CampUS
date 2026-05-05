@@ -10,7 +10,7 @@ class EventDao {
 
   /// Insert or replace events
   Future<void> insertEvents(List<Event> events) async {
-    final database = await db.database;
+    final database = await db.dbClient;
     final now = DateTime.now().toIso8601String();
 
     for (final event in events) {
@@ -33,7 +33,7 @@ class EventDao {
 
   /// Get all events from cache
   Future<List<Event>> getAllEvents() async {
-    final database = await db.database;
+    final database = await db.dbClient;
     final maps = await database.query(
       AppDatabase.events,
       orderBy: 'date ASC',
@@ -44,7 +44,7 @@ class EventDao {
 
   /// Get upcoming events
   Future<List<Event>> getUpcomingEvents() async {
-    final database = await db.database;
+    final database = await db.dbClient;
     final now = DateTime.now().toIso8601String();
     final maps = await database.query(
       AppDatabase.events,
@@ -58,7 +58,7 @@ class EventDao {
 
   /// Get event by ID
   Future<Event?> getEventById(int id) async {
-    final database = await db.database;
+    final database = await db.dbClient;
     final maps = await database.query(
       AppDatabase.events,
       where: 'id = ?',
@@ -74,13 +74,13 @@ class EventDao {
 
   /// Delete all events
   Future<void> deleteAll() async {
-    final database = await db.database;
+    final database = await db.dbClient;
     await database.delete(AppDatabase.events);
   }
 
   /// Check if cache is stale
   Future<bool> isCacheStale(Duration staleDuration) async {
-    final database = await db.database;
+    final database = await db.dbClient;
     final maps = await database.rawQuery(
       'SELECT MAX(synced_at) as latest FROM ${AppDatabase.events}',
     );

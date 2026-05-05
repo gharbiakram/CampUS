@@ -144,4 +144,16 @@ class AnnouncementRepository {
   Future<void> clearCache() async {
     await announcementDao.deleteAll();
   }
+
+  /// Add a new announcement locally so it appears immediately offline-first.
+  Future<Result<Announcement>> addAnnouncement(Announcement announcement) async {
+    try {
+      await announcementDao.insertAnnouncements([announcement]);
+      return Success(announcement);
+    } catch (e) {
+      return Failure(UnknownException(
+        message: 'Error adding announcement: ${e.toString()}',
+      ));
+    }
+  }
 }

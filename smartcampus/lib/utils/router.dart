@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 import '../screens/login_screen.dart';
+import '../screens/campus_map_screen.dart';
 import '../screens/main_screen.dart';
 import '../services/auth_provider.dart';
 
@@ -21,6 +22,11 @@ GoRouter createGoRouter(AuthProvider authProvider) {
         path: '/home',
         name: 'home',
         builder: (context, state) => const MainScreen(),
+      ),
+      GoRoute(
+        path: '/features',
+        name: 'features',
+        builder: (context, state) => const CampusMapScreen(),
       ),
     ],
     redirect: (context, state) {

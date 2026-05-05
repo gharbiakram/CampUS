@@ -57,6 +57,24 @@ class EventProvider extends ChangeNotifier {
     await loadEvents(forceRefresh: true);
   }
 
+  Future<bool> addEvent(Event event) async {
+    final result = await _eventRepository.addEvent(event);
+    return result.fold(
+      (failure) {
+        _error = 'Could not add event. ${failure.toString()}';
+        notifyListeners();
+        return false;
+      },
+      (item) {
+        _events = [item, ..._events];
+        _hasLoadedOnce = true;
+        _error = null;
+        notifyListeners();
+        return true;
+      },
+    );
+  }
+
   void clearError() {
     _error = null;
     notifyListeners();

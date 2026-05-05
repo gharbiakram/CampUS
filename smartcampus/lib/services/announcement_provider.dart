@@ -62,6 +62,24 @@ class AnnouncementProvider extends ChangeNotifier {
     await loadAnnouncements(forceRefresh: true);
   }
 
+  Future<bool> addAnnouncement(Announcement announcement) async {
+    final result = await _announcementRepository.addAnnouncement(announcement);
+    return result.fold(
+      (failure) {
+        _error = _friendlyMessage(failure.toString());
+        notifyListeners();
+        return false;
+      },
+      (item) {
+        _announcements = [item, ..._announcements];
+        _hasLoadedOnce = true;
+        _error = null;
+        notifyListeners();
+        return true;
+      },
+    );
+  }
+
   void clearError() {
     _error = null;
     notifyListeners();

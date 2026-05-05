@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -14,6 +15,7 @@ class AppDatabase {
   static final AppDatabase _instance = AppDatabase._internal();
 
   Database? _database;
+  _InMemoryDb? _inMemory;
 
   factory AppDatabase() {
     return _instance;
@@ -25,6 +27,16 @@ class AppDatabase {
   Future<Database> get database async {
     _database ??= await _initDb();
     return _database!;
+  }
+
+  /// Platform-aware DB client: returns an in-memory implementation on web
+  /// because `sqflite` is unavailable there.
+  Future<dynamic> get dbClient async {
+    if (kIsWeb) {
+      _inMemory ??= _InMemoryDb();
+      return _inMemory!;
+    }
+    return await database;
   }
 
   /// Initialize database and create tables
@@ -107,4 +119,92 @@ class AppDatabase {
     await db.delete(timetable);
     await db.delete(preferences);
   }
+}
+
+class _InMemoryDb {
+  final Map<String, List<Map<String, dynamic>>> _tables = {};
+  int _autoId = 1;
+
+  Future<int> insert(String table, Map<String, dynamic> values, {ConflictAlgorithm? conflictAlgorithm}) async {
+    final t = _tables.putIfAbsent(table, () => []);
+    final row = Map<String, dynamic>.from(values);
+    if (!row.containsKey('id')) row['id'] = _autoId++;
+    final idx = t.indexWhere((r) => r['id'] == row['id']);
+    if (idx >= 0) t[idx] = row; else t.add(row);
+    return row['id'] as int;
+  }
+
+  Future<List<Map<String, dynamic>>> query(String table, {String? where, List<Object?>? whereArgs, String? orderBy, int? limit}) async {
+    final list = _tables[table] ?? [];
+    Iterable<Map<String, dynamic>> results = list;
+    if (where != null && whereArgs != null && whereArgs.isNotEmpty) {
+      if (where.contains('id = ?')) {
+        final id = whereArgs.first;
+        results = results.where((r) => r['id'] == id);
+      } else if (where.contains('day = ?')) {
+        final day = whereArgs.first;
+        results = results.where((r) => r['day'] == day);
+      } else if (where.contains('date >= ?')) {
+        final threshold = whereArgs.first as String;
+        results = results.where((r) {
+          final v = r['date'];
+          return v is String && v.compareTo(threshold) >= 0;
+        });
+      }
+    }
+    if (orderBy != null && orderBy.isNotEmpty) {
+      final parts = orderBy.split(',').map((p) => p.trim()).toList();
+      final sorted = results.toList();
+      sorted.sort((a, b) {
+        for (final part in parts) {
+          final tokens = part.split(RegExp(r'\s+'));
+          final field = tokens[0];
+          final desc = tokens.length > 1 && tokens[1].toUpperCase() == 'DESC';
+          final va = (a[field] ?? '').toString();
+          final vb = (b[field] ?? '').toString();
+          final cmp = va.compareTo(vb);
+          if (cmp != 0) return desc ? -cmp : cmp;
+        }
+        return 0;
+      });
+      results = sorted;
+    }
+    if (limit != null) results = results.take(limit);
+    return results.map((m) => Map<String, dynamic>.from(m)).toList();
+  }
+
+  Future<int> delete(String table, {String? where, List<Object?>? whereArgs}) async {
+    final list = _tables.putIfAbsent(table, () => []);
+    if (where == null) {
+      final count = list.length;
+      _tables[table] = [];
+      return count;
+    }
+    if (where.contains('id = ?') && whereArgs != null && whereArgs.isNotEmpty) {
+      final id = whereArgs.first;
+      final before = list.length;
+      list.removeWhere((r) => r['id'] == id);
+      return before - list.length;
+    }
+    return 0;
+  }
+
+  Future<List<Map<String, dynamic>>> rawQuery(String sql) async {
+    final m = RegExp(r'FROM\s+([a-zA-Z0-9_]+)', caseSensitive: false).firstMatch(sql);
+    if (m != null) {
+      final table = m.group(1)!;
+      final list = _tables[table] ?? [];
+      String? latest;
+      for (final row in list) {
+        final val = row['synced_at'] as String?;
+        if (val != null) {
+          if (latest == null || val.compareTo(latest) > 0) latest = val;
+        }
+      }
+      return [ {'latest': latest} ];
+    }
+    return [];
+  }
+
+  Future<void> close() async {}
 }

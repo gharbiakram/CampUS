@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class HomeScreen extends StatelessWidget {
   final void Function(int index)? onNavigateTab;
@@ -49,11 +50,9 @@ class HomeScreen extends StatelessWidget {
                   _buildDashboardCard(
                     context,
                     icon: Icons.map,
-                    label: 'Campus Map',
-                    description: 'Navigate campus',
-                    onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Campus Map feature is coming soon.')),
-                    ),
+                    label: 'Live Map',
+                    description: 'Track your location',
+                    onTap: () => context.go('/features'),
                   ),
                   _buildDashboardCard(
                     context,

@@ -51,4 +51,22 @@ class TimetableProvider extends ChangeNotifier {
   Future<void> refresh() async {
     await loadTimetable(forceRefresh: true);
   }
+
+  Future<bool> addItem(TimetableItem item) async {
+    final result = await _repo.addTimetableItem(item);
+    return result.fold(
+      (failure) {
+        _error = 'Could not add timetable entry. ${failure.toString()}';
+        notifyListeners();
+        return false;
+      },
+      (value) {
+        _items = [value, ..._items];
+        _hasLoadedOnce = true;
+        _error = null;
+        notifyListeners();
+        return true;
+      },
+    );
+  }
 }

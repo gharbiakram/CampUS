@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_provider.dart';
+import '../services/notification_service.dart';
 import '../services/settings_provider.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -96,6 +97,28 @@ class SettingsScreen extends StatelessWidget {
                                   const SnackBar(
                                     content: Text('Offline mode setting updated'),
                                   ),
+                                );
+                              },
+                            ),
+                            ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: const Icon(Icons.security),
+                              title: const Text('Device Features'),
+                              subtitle: const Text('Camera and location demo screen'),
+                              trailing: const Icon(Icons.chevron_right),
+                              onTap: () => context.go('/features'),
+                            ),
+                            ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: const Icon(Icons.notifications_active),
+                              title: const Text('Test Notification'),
+                              subtitle: const Text('Show a simple local notification'),
+                              trailing: const Icon(Icons.chevron_right),
+                              onTap: () async {
+                                final messenger = ScaffoldMessenger.of(context);
+                                await NotificationService.instance.showTestNotification();
+                                messenger.showSnackBar(
+                                  const SnackBar(content: Text('Test notification sent')),
                                 );
                               },
                             ),

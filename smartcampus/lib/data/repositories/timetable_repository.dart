@@ -57,4 +57,14 @@ class TimetableRepository {
       return Failure(UnknownException(message: 'Error retrieving cached timetable: ${e.toString()}'));
     }
   }
+
+  /// Add a new timetable item locally so it appears immediately offline-first.
+  Future<Result<TimetableItem>> addTimetableItem(TimetableItem item) async {
+    try {
+      await timetableDao.insertItems([item]);
+      return Success(item);
+    } catch (e) {
+      return Failure(UnknownException(message: 'Error adding timetable item: ${e.toString()}'));
+    }
+  }
 }

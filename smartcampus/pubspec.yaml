@@ -68,6 +68,8 @@ dependencies:
   geolocator: ^9.0.0
   image_picker: ^1.0.0
   sensors_plus: ^2.0.0
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.1
   
   # Background tasks
   workmanager: ^0.5.0

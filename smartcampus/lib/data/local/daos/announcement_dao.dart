@@ -10,7 +10,7 @@ class AnnouncementDao {
 
   /// Insert or replace announcements
   Future<void> insertAnnouncements(List<Announcement> announcements) async {
-    final database = await db.database;
+    final database = await db.dbClient;
     final now = DateTime.now().toIso8601String();
 
     for (final announcement in announcements) {
@@ -32,7 +32,7 @@ class AnnouncementDao {
 
   /// Get all announcements from cache
   Future<List<Announcement>> getAllAnnouncements() async {
-    final database = await db.database;
+    final database = await db.dbClient;
     final maps = await database.query(
       AppDatabase.announcements,
       orderBy: 'created_at DESC',
@@ -43,7 +43,7 @@ class AnnouncementDao {
 
   /// Get announcement by ID
   Future<Announcement?> getAnnouncementById(int id) async {
-    final database = await db.database;
+    final database = await db.dbClient;
     final maps = await database.query(
       AppDatabase.announcements,
       where: 'id = ?',
@@ -59,13 +59,13 @@ class AnnouncementDao {
 
   /// Delete all announcements (for cache clear)
   Future<void> deleteAll() async {
-    final database = await db.database;
+    final database = await db.dbClient;
     await database.delete(AppDatabase.announcements);
   }
 
   /// Check if cache is stale (older than duration)
   Future<bool> isCacheStale(Duration staleDuration) async {
-    final database = await db.database;
+    final database = await db.dbClient;
     final maps = await database.rawQuery(
       'SELECT MAX(synced_at) as latest FROM ${AppDatabase.announcements}',
     );

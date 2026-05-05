@@ -10,7 +10,7 @@ class TimetableDao {
 
   /// Insert or replace timetable items
   Future<void> insertItems(List<TimetableItem> items) async {
-    final database = await db.database;
+    final database = await db.dbClient;
     final now = DateTime.now().toIso8601String();
 
     for (final item in items) {
@@ -33,7 +33,7 @@ class TimetableDao {
 
   /// Get all timetable items
   Future<List<TimetableItem>> getAllItems() async {
-    final database = await db.database;
+    final database = await db.dbClient;
     final maps = await database.query(
       AppDatabase.timetable,
       orderBy: 'day ASC, start_time ASC',
@@ -44,7 +44,7 @@ class TimetableDao {
 
   /// Get timetable items by day
   Future<List<TimetableItem>> getByDay(String day) async {
-    final database = await db.database;
+    final database = await db.dbClient;
     final maps = await database.query(
       AppDatabase.timetable,
       where: 'day = ?',
@@ -57,13 +57,13 @@ class TimetableDao {
 
   /// Delete all timetable items
   Future<void> deleteAll() async {
-    final database = await db.database;
+    final database = await db.dbClient;
     await database.delete(AppDatabase.timetable);
   }
 
   /// Check if cache is stale
   Future<bool> isCacheStale(Duration staleDuration) async {
-    final database = await db.database;
+    final database = await db.dbClient;
     final maps = await database.rawQuery(
       'SELECT MAX(synced_at) as latest FROM ${AppDatabase.timetable}',
     );

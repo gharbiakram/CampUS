@@ -1,0 +1,114 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+2 0 obj
+<< /Length 2124 >>
+stream
+BT
+/F1 11 Tf
+72 760 Td
+(# SmartCampus Companion Progress Report) Tj
+T*
+() Tj
+T*
+(## Project Summary) Tj
+T*
+(SmartCampus Companion is a simple Flutter + FastAPI campus app built for a mobile operating) Tj
+T*
+(systems assignment. The goal is to demonstrate the required OS concepts with a small,) Tj
+T*
+(functional app rather than a production-grade system.) Tj
+T*
+() Tj
+T*
+(## Implemented Features) Tj
+T*
+(- Authentication with login and logout flow.) Tj
+T*
+(- Announcements, events, and timetable screens backed by API data.) Tj
+T*
+(- Offline caching for core data using SQLite.) Tj
+T*
+(- Persistent settings using SharedPreferences.) Tj
+T*
+(- Minimal device-feature demo screen for camera/gallery and location.) Tj
+T*
+(- Local notification test trigger from Settings.) Tj
+T*
+() Tj
+T*
+(## Mobile OS Concept Mapping) Tj
+T*
+(| Feature | Mobile OS Concept | What the App Demonstrates |) Tj
+T*
+(|---|---|---|) Tj
+T*
+(| Login and logout | Lifecycle and security | Session-based access to the app with) Tj
+T*
+(authenticated navigation. |) Tj
+T*
+(| API data loading | Networking | REST calls to backend endpoints for announcements, events,) Tj
+T*
+(and timetable. |) Tj
+T*
+(| SQLite cache | Storage and sandboxing | Local persistence for offline access and cached) Tj
+T*
+(loading states. |) Tj
+T*
+(| Settings storage | Storage and sandboxing | Simple preference persistence across app) Tj
+T*
+(restarts. |) Tj
+T*
+(| Device features screen | Permissions model | Camera/gallery and location permission) Tj
+T*
+(requests with fallback states. |) Tj
+T*
+(| Notification test | Notifications | A basic local notification path that can be triggered) Tj
+T*
+(from the app. |) Tj
+T*
+() Tj
+T*
+(## Current Status) Tj
+T*
+(The app is intentionally kept simple and functional. The main flows now work with clean) Tj
+T*
+(analyzer output on the touched slices, and the implementation stays aligned with the) Tj
+T*
+(assignment scope.) Tj
+T*
+() Tj
+T*
+(## Remaining Submission Work) Tj
+T*
+(- Capture screenshots of the implemented screens.) Tj
+T*
+(- Export this report to PDF.) Tj
+T*
+(- Confirm the final app flow on the target emulator or device.) Tj
+ET
+endstream
+endobj
+3 0 obj
+<< /Type /Page /Parent 4 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 2 0 R >>
+endobj
+4 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+5 0 obj
+<< /Type /Catalog /Pages 4 0 R >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000079 00000 n 
+0000002255 00000 n 
+0000002381 00000 n 
+0000002438 00000 n 
+trailer
+<< /Size 6 /Root 5 0 R >>
+startxref
+2487
+%%EOF
