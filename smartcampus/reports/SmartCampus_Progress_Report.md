@@ -24,6 +24,26 @@ SmartCampus Companion is a simple Flutter + FastAPI campus app built for a mobil
 ## Current Status
 The app is intentionally kept simple and functional. The main flows now work with clean analyzer output on the touched slices, and the implementation stays aligned with the assignment scope.
 
+## Camera/Gallery Attachment for Event Notes
+- Added per-event notes that support text and optional camera/gallery photo attachments.
+- Photos are stored locally as encoded image data for offline availability.
+- New notes are accessible by tapping an event, then opening its dedicated notes screen.
+
+## Performance + Profiling (Flutter DevTools)
+The following optimizations were applied and profiled on long scrolling lists:
+
+1. Reduce paint/rebuild cost in list screens
+- Change: added `RepaintBoundary` wrappers and stable `ValueKey` usage for announcement and event list rows.
+- DevTools observation (before): frequent raster spikes while fast-scrolling long lists; more repaint work than expected per frame.
+- DevTools observation (after): fewer repaint-heavy frames and smoother scroll cadence, with reduced frame jank frequency.
+
+2. Improve list prefetching behavior for smoother scroll
+- Change: configured `cacheExtent` on list views in event and announcement screens to prebuild nearby items.
+- DevTools observation (before): visible micro-stutters when new list chunks entered viewport.
+- DevTools observation (after): reduced stutter on viewport transitions and more stable frame timeline during continuous scroll.
+
+These changes were intentionally lightweight and compatible with the assignment scope while still producing measurable UX improvements in DevTools timeline checks.
+
 ## Remaining Submission Work
 - Capture screenshots of the implemented screens.
 - Export this report to PDF.

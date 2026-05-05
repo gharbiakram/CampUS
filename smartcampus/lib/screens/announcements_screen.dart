@@ -53,13 +53,19 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
           return RefreshIndicator(
             onRefresh: provider.refreshAnnouncements,
             child: ListView.separated(
+              cacheExtent: 900,
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.all(16),
               itemCount: provider.announcements.length,
               separatorBuilder: (context, index) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 final item = provider.announcements[index];
-                return _AnnouncementCard(item: item);
+                return RepaintBoundary(
+                  child: _AnnouncementCard(
+                    key: ValueKey(item.id),
+                    item: item,
+                  ),
+                );
               },
             ),
           );
@@ -163,7 +169,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
 class _AnnouncementCard extends StatelessWidget {
   final Announcement item;
 
-  const _AnnouncementCard({required this.item});
+  const _AnnouncementCard({super.key, required this.item});
 
   Color _priorityColor(String priority) {
     switch (priority.toLowerCase()) {

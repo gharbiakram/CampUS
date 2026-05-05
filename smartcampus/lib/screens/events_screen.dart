@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 
 import '../services/event_provider.dart';
 import '../models/event.dart';
+import '../services/event_notes_provider.dart';
+import 'event_notes_screen.dart';
 
 class EventsScreen extends StatefulWidget {
   const EventsScreen({super.key});
@@ -22,8 +24,6 @@ class _EventsScreenState extends State<EventsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<EventProvider>(context);
-
     return Scaffold(
       appBar: AppBar(title: const Text('Events')),
       floatingActionButton: FloatingActionButton.extended(
@@ -31,47 +31,67 @@ class _EventsScreenState extends State<EventsScreen> {
         icon: const Icon(Icons.add),
         label: const Text('New event'),
       ),
-      body: RefreshIndicator(
-        onRefresh: provider.refreshEvents,
-        child: Builder(builder: (context) {
-          if (provider.isLoading && !provider.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: Consumer<EventProvider>(
+        builder: (context, provider, _) {
+          return RefreshIndicator(
+            onRefresh: provider.refreshEvents,
+            child: Builder(builder: (context) {
+              if (provider.isLoading && !provider.hasData) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-          if (provider.error != null && !provider.hasData) {
-            return ListView(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(provider.error ?? 'Error loading events'),
-                )
-              ],
-            );
-          }
+              if (provider.error != null && !provider.hasData) {
+                return ListView(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(provider.error ?? 'Error loading events'),
+                    )
+                  ],
+                );
+              }
 
-          if (provider.events.isEmpty) {
-            return ListView(
-              children: const [
-                Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Text('No upcoming events.'),
-                )
-              ],
-            );
-          }
+              if (provider.events.isEmpty) {
+                return ListView(
+                  children: const [
+                    Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Text('No upcoming events.'),
+                    )
+                  ],
+                );
+              }
 
-          return ListView.builder(
-            itemCount: provider.events.length,
-            itemBuilder: (context, index) {
-              final Event event = provider.events[index];
-              return ListTile(
-                title: Text(event.title),
-                subtitle: Text('${event.date.toLocal().toIso8601String().split('T').first} • ${event.startTime} - ${event.endTime}'),
-                trailing: Text(event.location),
+              return ListView.builder(
+                cacheExtent: 900,
+                itemCount: provider.events.length,
+                itemBuilder: (context, index) {
+                  final Event event = provider.events[index];
+                  return RepaintBoundary(
+                    child: ListTile(
+                      key: ValueKey(event.id),
+                      title: Text(event.title),
+                      subtitle: Text(
+                        '${event.date.toLocal().toIso8601String().split('T').first} • ${event.startTime} - ${event.endTime}',
+                      ),
+                      trailing: Text(event.location),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => ChangeNotifierProvider(
+                              create: (_) => EventNotesProvider(),
+                              child: EventNotesScreen(event: event),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                },
               );
-            },
+            }),
           );
-        }),
+        },
       ),
     );
   }

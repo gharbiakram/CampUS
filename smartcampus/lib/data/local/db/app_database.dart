@@ -5,11 +5,12 @@ import 'package:path/path.dart';
 /// SQLite database initialization and management
 class AppDatabase {
   static const String _dbName = 'smartcampus.db';
-  static const int _version = 1;
+  static const int _version = 3;
 
   static const String announcements = 'announcements';
   static const String events = 'events';
   static const String timetable = 'timetable';
+  static const String eventNotes = 'event_notes';
   static const String preferences = 'preferences';
   static const String syncQueue = 'sync_queue';
 
@@ -94,6 +95,16 @@ class AppDatabase {
     ''');
 
     await db.execute('''
+      CREATE TABLE $eventNotes (
+        id INTEGER PRIMARY KEY,
+        event_id INTEGER NOT NULL,
+        note TEXT NOT NULL,
+        image_data TEXT,
+        created_at TEXT NOT NULL
+      )
+    ''');
+
+    await db.execute('''
       CREATE TABLE $preferences (
         key TEXT PRIMARY KEY,
         value TEXT NOT NULL
@@ -112,7 +123,28 @@ class AppDatabase {
 
   /// Handle database upgrades
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // Implement future migrations here if needed
+    if (oldVersion < 2) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS $syncQueue (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          kind TEXT NOT NULL,
+          payload TEXT NOT NULL,
+          created_at TEXT NOT NULL
+        )
+      ''');
+    }
+
+    if (oldVersion < 3) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS $eventNotes (
+          id INTEGER PRIMARY KEY,
+          event_id INTEGER NOT NULL,
+          note TEXT NOT NULL,
+          image_data TEXT,
+          created_at TEXT NOT NULL
+        )
+      ''');
+    }
   }
 
   /// Close database
@@ -127,6 +159,7 @@ class AppDatabase {
     await db.delete(announcements);
     await db.delete(events);
     await db.delete(timetable);
+    await db.delete(eventNotes);
     await db.delete(preferences);
     await db.delete(syncQueue);
   }
@@ -156,6 +189,9 @@ class _InMemoryDb {
       if (where.contains('id = ?')) {
         final id = whereArgs.first;
         results = results.where((r) => r['id'] == id);
+      } else if (where.contains('event_id = ?')) {
+        final eventId = whereArgs.first;
+        results = results.where((r) => r['event_id'] == eventId);
       } else if (where.contains('day = ?')) {
         final day = whereArgs.first;
         results = results.where((r) => r['day'] == day);
