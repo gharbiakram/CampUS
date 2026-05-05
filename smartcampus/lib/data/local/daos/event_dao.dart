@@ -89,8 +89,7 @@ class EventDao {
       return true;
     }
 
-    final latestSync =
-        DateTime.parse(maps.first['latest'] as String);
+    final latestSync = DateTime.parse(maps.first['latest'] as String);
     final now = DateTime.now();
     return now.difference(latestSync) > staleDuration;
   }

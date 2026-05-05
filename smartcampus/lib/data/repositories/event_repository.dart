@@ -32,7 +32,7 @@ class EventRepository {
             }
           }
         } catch (e) {
-          // Ignore cache errors, continue to fetch from API
+          // Ignore cache errors
         }
       }
 

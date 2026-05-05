@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  final void Function(int index)? onNavigateTab;
+
+  const HomeScreen({super.key, this.onNavigateTab});
 
   @override
   Widget build(BuildContext context) {
@@ -35,24 +37,30 @@ class HomeScreen extends StatelessWidget {
                     icon: Icons.schedule,
                     label: 'Schedule',
                     description: 'View your timetable',
+                    onTap: () => onNavigateTab?.call(3),
                   ),
                   _buildDashboardCard(
                     context,
                     icon: Icons.announcement,
                     label: 'Announcements',
                     description: 'Latest updates',
+                    onTap: () => onNavigateTab?.call(1),
                   ),
                   _buildDashboardCard(
                     context,
                     icon: Icons.map,
                     label: 'Campus Map',
                     description: 'Navigate campus',
+                    onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Campus Map feature is coming soon.')),
+                    ),
                   ),
                   _buildDashboardCard(
                     context,
                     icon: Icons.warning_amber,
                     label: 'Alerts',
                     description: 'Safety notices',
+                    onTap: () => onNavigateTab?.call(1),
                   ),
                 ],
               ),
@@ -81,6 +89,7 @@ class HomeScreen extends StatelessWidget {
     required IconData icon,
     required String label,
     required String description,
+    required VoidCallback onTap,
   }) {
     return Card(
       elevation: 2,
@@ -89,11 +98,7 @@ class HomeScreen extends StatelessWidget {
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('$label feature coming soon!')),
-          );
-        },
+        onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_provider.dart';
 
@@ -104,11 +105,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         onPressed: authProvider.isLoading
                             ? null
                             : () async {
+                                final messenger = ScaffoldMessenger.of(context);
+                                final router = GoRouter.of(context);
                                 final email = _emailController.text.trim();
                                 final password = _passwordController.text;
 
                                 if (email.isEmpty || password.isEmpty) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
+                                  messenger.showSnackBar(
                                     const SnackBar(
                                       content: Text(
                                         'Please enter email and password',
@@ -121,12 +124,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                 final success =
                                     await authProvider.login(email, password);
                                 if (success && mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
+                                  messenger.showSnackBar(
                                     const SnackBar(
                                       content: Text('Login successful!'),
                                       backgroundColor: Colors.green,
                                     ),
                                   );
+                                  router.go('/home');
                                 }
                               },
                         child: authProvider.isLoading

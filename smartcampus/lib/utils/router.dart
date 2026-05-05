@@ -9,6 +9,7 @@ import '../services/auth_provider.dart';
 /// - If logged in: redirect to /home
 GoRouter createGoRouter(AuthProvider authProvider) {
   return GoRouter(
+    refreshListenable: authProvider,
     initialLocation: authProvider.isLoggedIn ? '/home' : '/login',
     routes: [
       GoRoute(
@@ -24,7 +25,7 @@ GoRouter createGoRouter(AuthProvider authProvider) {
     ],
     redirect: (context, state) {
       final isLoggedIn = authProvider.isLoggedIn;
-      final isGoingToLogin = state.matchedLocation == '/login'; // explain this please : 
+      final isGoingToLogin = state.matchedLocation == '/login';
 
       if (!isLoggedIn && !isGoingToLogin) {
         return '/login';

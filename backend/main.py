@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routes import auth
 from app.routes import announcements
+from app.routes import events
+from app.routes import timetable
 
 # Create FastAPI app
 app = FastAPI(
@@ -22,6 +24,8 @@ app.add_middleware(
 # Include auth routes
 app.include_router(auth.router)
 app.include_router(announcements.router)
+app.include_router(events.router)
+app.include_router(timetable.router)
 
 
 @app.get("/api/health")

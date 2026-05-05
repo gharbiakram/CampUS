@@ -9,7 +9,7 @@ class TimetableDao {
   TimetableDao(this.db);
 
   /// Insert or replace timetable items
-  Future<void> insertTimetableItems(List<TimetableItem> items) async {
+  Future<void> insertItems(List<TimetableItem> items) async {
     final database = await db.database;
     final now = DateTime.now().toIso8601String();
 
@@ -32,18 +32,18 @@ class TimetableDao {
   }
 
   /// Get all timetable items
-  Future<List<TimetableItem>> getAllTimetableItems() async {
+  Future<List<TimetableItem>> getAllItems() async {
     final database = await db.database;
     final maps = await database.query(
       AppDatabase.timetable,
       orderBy: 'day ASC, start_time ASC',
     );
 
-    return maps.map((map) => TimetableItem.fromMap(map)).toList();
+    return maps.map((m) => TimetableItem.fromMap(m)).toList();
   }
 
   /// Get timetable items by day
-  Future<List<TimetableItem>> getTimetableByDay(String day) async {
+  Future<List<TimetableItem>> getByDay(String day) async {
     final database = await db.database;
     final maps = await database.query(
       AppDatabase.timetable,
@@ -52,23 +52,7 @@ class TimetableDao {
       orderBy: 'start_time ASC',
     );
 
-    return maps.map((map) => TimetableItem.fromMap(map)).toList();
-  }
-
-  /// Get timetable item by ID
-  Future<TimetableItem?> getTimetableItemById(int id) async {
-    final database = await db.database;
-    final maps = await database.query(
-      AppDatabase.timetable,
-      where: 'id = ?',
-      whereArgs: [id],
-      limit: 1,
-    );
-
-    if (maps.isNotEmpty) {
-      return TimetableItem.fromMap(maps.first);
-    }
-    return null;
+    return maps.map((m) => TimetableItem.fromMap(m)).toList();
   }
 
   /// Delete all timetable items
@@ -84,13 +68,8 @@ class TimetableDao {
       'SELECT MAX(synced_at) as latest FROM ${AppDatabase.timetable}',
     );
 
-    if (maps.isEmpty || maps.first['latest'] == null) {
-      return true;
-    }
-
-    final latestSync =
-        DateTime.parse(maps.first['latest'] as String);
-    final now = DateTime.now();
-    return now.difference(latestSync) > staleDuration;
+    if (maps.isEmpty || maps.first['latest'] == null) return true;
+    final latestSync = DateTime.parse(maps.first['latest'] as String);
+    return DateTime.now().difference(latestSync) > staleDuration;
   }
 }

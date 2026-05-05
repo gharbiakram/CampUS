@@ -2,9 +2,9 @@ class TimetableItem {
   final int id;
   final String subject;
   final String instructor;
-  final String day; // Monday, Tuesday, etc.
-  final String startTime; // HH:mm format
-  final String endTime; // HH:mm format
+  final String day;
+  final String startTime;
+  final String endTime;
   final String room;
 
   TimetableItem({

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'announcements_screen.dart';
 import 'home_screen.dart';
+import 'events_screen.dart';
+import 'timetable_screen.dart';
 import 'settings_screen.dart';
 
 /// Wrapper screen that provides bottom navigation for the main app
@@ -14,15 +16,24 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
-  static const List<Widget> _screens = [
-    HomeScreen(),
-    AnnouncementsScreen(),
-    SettingsScreen(),
+  List<Widget> get _screens => [
+    HomeScreen(onNavigateTab: _onItemTapped),
+    const AnnouncementsScreen(),
+    const EventsScreen(),
+    const TimetableScreen(),
+    SettingsScreen(onLogout: _handleLogout),
   ];
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
+    });
+  }
+
+  Future<void> _handleLogout() async {
+    if (!mounted) return;
+    setState(() {
+      _selectedIndex = 0;
     });
   }
 
@@ -39,6 +50,14 @@ class _MainScreenState extends State<MainScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.notifications),
             label: 'Announcements',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.event),
+            label: 'Events',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.schedule),
+            label: 'Timetable',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),

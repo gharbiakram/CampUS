@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_provider.dart';
+import '../services/settings_provider.dart';
 
 class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key});
+  final Future<void> Function()? onLogout;
+
+  const SettingsScreen({super.key, this.onLogout});
 
   @override
   Widget build(BuildContext context) {
@@ -62,28 +66,40 @@ class SettingsScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    SwitchListTile(
-                      title: const Text('Push Notifications'),
-                      subtitle:
-                          const Text('Receive class reminders and alerts'),
-                      value: true,
-                      onChanged: (value) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Notifications setting updated'),
-                          ),
-                        );
-                      },
-                    ),
-                    SwitchListTile(
-                      title: const Text('Offline Mode'),
-                      subtitle: const Text('Cache data for offline access'),
-                      value: true,
-                      onChanged: (value) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Offline mode setting updated'),
-                          ),
+                    Consumer<SettingsProvider>(
+                      builder: (context, settings, _) {
+                        return Column(
+                          children: [
+                            SwitchListTile(
+                              title: const Text('Push Notifications'),
+                              subtitle:
+                                  const Text('Receive class reminders and alerts'),
+                              value: settings.pushNotifications,
+                              onChanged: (value) async {
+                                final messenger = ScaffoldMessenger.of(context);
+                                await settings.setPushNotifications(value);
+                                messenger.showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Notifications setting updated'),
+                                  ),
+                                );
+                              },
+                            ),
+                            SwitchListTile(
+                              title: const Text('Offline Mode'),
+                              subtitle: const Text('Cache data for offline access'),
+                              value: settings.offlineMode,
+                              onChanged: (value) async {
+                                final messenger = ScaffoldMessenger.of(context);
+                                await settings.setOfflineMode(value);
+                                messenger.showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Offline mode setting updated'),
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
                         );
                       },
                     ),
@@ -124,7 +140,7 @@ class SettingsScreen extends StatelessWidget {
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
-                        onPressed: () {
+                          onPressed: () {
                           _showLogoutDialog(context, authProvider);
                         },
                       ),
@@ -151,9 +167,15 @@ class SettingsScreen extends StatelessWidget {
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () {
-              authProvider.logout();
-              Navigator.pop(context);
+            onPressed: () async {
+              await authProvider.logout();
+              if (context.mounted) {
+                Navigator.pop(context);
+                await onLogout?.call();
+                if (context.mounted) {
+                  context.go('/login');
+                }
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
