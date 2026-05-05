@@ -30,6 +30,24 @@ class AnnouncementDao {
     }
   }
 
+  Future<int> insertAnnouncement(Announcement announcement) async {
+    final database = await db.dbClient;
+    final now = DateTime.now().toIso8601String();
+    return await database.insert(
+      AppDatabase.announcements,
+      {
+        'id': announcement.id,
+        'title': announcement.title,
+        'content': announcement.content,
+        'author': announcement.author,
+        'priority': announcement.priority,
+        'created_at': announcement.createdAt.toIso8601String(),
+        'synced_at': now,
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
   /// Get all announcements from cache
   Future<List<Announcement>> getAllAnnouncements() async {
     final database = await db.dbClient;
@@ -38,7 +56,7 @@ class AnnouncementDao {
       orderBy: 'created_at DESC',
     );
 
-    return maps.map((map) => Announcement.fromMap(map)).toList();
+    return AppDatabase.normalizeRows(maps).map(Announcement.fromMap).toList();
   }
 
   /// Get announcement by ID
@@ -52,7 +70,7 @@ class AnnouncementDao {
     );
 
     if (maps.isNotEmpty) {
-      return Announcement.fromMap(maps.first);
+      return Announcement.fromMap(Map<String, dynamic>.from(Map.castFrom(maps.first)));
     }
     return null;
   }

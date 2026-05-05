@@ -6,6 +6,7 @@ import 'services/announcement_provider.dart';
 import 'services/auth_provider.dart';
 import 'services/campus_sync_service.dart';
 import 'services/event_provider.dart';
+import 'services/event_notes_provider.dart';
 import 'services/timetable_provider.dart';
 import 'services/settings_provider.dart';
 import 'services/notification_service.dart';
@@ -28,6 +29,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => AuthProvider()),
         ChangeNotifierProvider(create: (context) => AnnouncementProvider()),
         ChangeNotifierProvider(create: (context) => EventProvider()),
+        ChangeNotifierProvider(create: (context) => EventNotesProvider()),
         ChangeNotifierProvider(create: (context) => TimetableProvider()),
         ChangeNotifierProvider(create: (context) => SettingsProvider()),
       ],

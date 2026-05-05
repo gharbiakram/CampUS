@@ -39,7 +39,15 @@ class EventDao {
       orderBy: 'date ASC',
     );
 
-    return maps.map((map) => Event.fromMap(map)).toList();
+    final raw = List.from(maps as List);
+    final out = <Event>[];
+    for (final r in raw) {
+      if (r is Map) {
+        final m = Map<String, dynamic>.from(Map.castFrom(r));
+        out.add(Event.fromMap(m));
+      }
+    }
+    return out;
   }
 
   /// Get upcoming events
@@ -53,7 +61,15 @@ class EventDao {
       orderBy: 'date ASC',
     );
 
-    return maps.map((map) => Event.fromMap(map)).toList();
+    final raw = List.from(maps as List);
+    final out = <Event>[];
+    for (final r in raw) {
+      if (r is Map) {
+        final m = Map<String, dynamic>.from(Map.castFrom(r));
+        out.add(Event.fromMap(m));
+      }
+    }
+    return out;
   }
 
   /// Get event by ID
@@ -67,7 +83,9 @@ class EventDao {
     );
 
     if (maps.isNotEmpty) {
-      return Event.fromMap(maps.first);
+      final first = maps.first;
+      final m = Map<String, dynamic>.from(Map.castFrom(first));
+      return Event.fromMap(m);
     }
     return null;
   }

@@ -6,9 +6,9 @@ class EventNoteDao {
 
   EventNoteDao(this.db);
 
-  Future<void> insertNote(EventNote note) async {
+  Future<int> insertNote(EventNote note) async {
     final database = await db.dbClient;
-    await database.insert(AppDatabase.eventNotes, note.toMap());
+    return await database.insert(AppDatabase.eventNotes, note.toMap());
   }
 
   Future<List<EventNote>> getNotesForEvent(int eventId) async {
@@ -19,7 +19,9 @@ class EventNoteDao {
       whereArgs: [eventId],
       orderBy: 'created_at DESC',
     );
-    return rows.map((row) => EventNote.fromMap(Map<String, dynamic>.from(row))).toList();
+
+    final normalized = AppDatabase.normalizeRows(rows);
+    return normalized.map(EventNote.fromMap).toList();
   }
 
   Future<void> deleteNote(int id) async {

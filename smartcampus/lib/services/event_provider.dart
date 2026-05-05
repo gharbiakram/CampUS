@@ -70,6 +70,7 @@ class EventProvider extends ChangeNotifier {
         _hasLoadedOnce = true;
         _error = null;
         notifyListeners();
+        // Keep the optimistic update visible immediately; background reloads can re-order but should not clear it.
         return true;
       },
     );

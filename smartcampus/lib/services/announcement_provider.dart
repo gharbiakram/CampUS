@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/local/daos/announcement_dao.dart';
 import '../data/local/db/app_database.dart';
@@ -66,8 +67,15 @@ class AnnouncementProvider extends ChangeNotifier {
     final result = await _announcementRepository.addAnnouncement(announcement);
     return result.fold(
       (failure) {
-        _error = _friendlyMessage(failure.toString());
+        final msg = _friendlyMessage(failure.toString());
+        _error = msg;
         notifyListeners();
+        // store debug info asynchronously (non-blocking)
+        SharedPreferences.getInstance().then((prefs) {
+          prefs.setString('smartcampus_last_error', 'Announcement add failed: ${failure.toString()}');
+        }).catchError((_) {});
+        // ignore: avoid_print
+        print('AnnouncementProvider.addAnnouncement error: ${failure.toString()}');
         return false;
       },
       (item) {
@@ -75,6 +83,7 @@ class AnnouncementProvider extends ChangeNotifier {
         _hasLoadedOnce = true;
         _error = null;
         notifyListeners();
+        // no-op: repository writes directly to local cache on success
         return true;
       },
     );

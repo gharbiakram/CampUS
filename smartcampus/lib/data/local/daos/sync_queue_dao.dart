@@ -16,10 +16,18 @@ class SyncQueueDao {
 
   Future<List<Map<String, dynamic>>> getAllPending() async {
     final database = await db.dbClient;
-    return database.query(
+    final rows = await database.query(
       AppDatabase.syncQueue,
       orderBy: 'created_at ASC',
     );
+    final raw = List.from(rows as List);
+    final out = <Map<String, dynamic>>[];
+    for (final r in raw) {
+      if (r is Map) {
+        out.add(Map<String, dynamic>.from(Map.castFrom(r)));
+      }
+    }
+    return out;
   }
 
   Future<void> deleteById(int id) async {

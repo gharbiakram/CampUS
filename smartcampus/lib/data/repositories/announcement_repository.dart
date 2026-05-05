@@ -117,7 +117,7 @@ class AnnouncementRepository {
           final announcement = Announcement.fromJson(
             jsonDecode(response.body) as Map<String, dynamic>,
           );
-          await announcementDao.insertAnnouncements([announcement]);
+          await announcementDao.insertAnnouncement(announcement);
           return Success(announcement);
         }
       } catch (_) {}
@@ -152,7 +152,10 @@ class AnnouncementRepository {
   /// Add a new announcement locally so it appears immediately offline-first.
   Future<Result<Announcement>> addAnnouncement(Announcement announcement) async {
     try {
-      await announcementDao.insertAnnouncements([announcement]);
+      final insertedId = await announcementDao.insertAnnouncement(announcement);
+      if (insertedId <= 0) {
+        throw StateError('Announcement insert returned invalid id');
+      }
       await syncQueueDao.enqueue(
         kind: 'announcement',
         payload: jsonEncode({
@@ -164,6 +167,8 @@ class AnnouncementRepository {
           'created_at': announcement.createdAt.toIso8601String(),
         }),
       );
+      // ignore: avoid_print
+      print('AnnouncementRepository.addAnnouncement saved id: $insertedId');
       return Success(announcement);
     } catch (e) {
       return Failure(UnknownException(

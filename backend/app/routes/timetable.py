@@ -1,31 +1,45 @@
 from fastapi import APIRouter, HTTPException, status
+
 from ..models.timetable import TimetableItem, TimetableListResponse
+from ..utils.persistent_store import load_json_list, save_json_list
 
 router = APIRouter(
     prefix="/api/timetable",
     tags=["timetable"],
 )
 
-_DEMO_TIMETABLE = [
-    TimetableItem(
-        id=1,
-        subject="Mobile Security",
-        instructor="Dr. A. Smith",
-        day="Monday",
-        start_time="09:00",
-        end_time="10:30",
-        room="LH1",
-    ),
-    TimetableItem(
-        id=2,
-        subject="Software Engineering",
-        instructor="Prof. J. Doe",
-        day="Tuesday",
-        start_time="11:00",
-        end_time="12:30",
-        room="LH2",
-    ),
+_STORAGE_FILE = 'timetable.json'
+_DEFAULT_TIMETABLE = [
+    {
+        'id': 1,
+        'subject': 'Mobile Security',
+        'instructor': 'Dr. A. Smith',
+        'day': 'Monday',
+        'start_time': '09:00',
+        'end_time': '10:30',
+        'room': 'LH1',
+    },
+    {
+        'id': 2,
+        'subject': 'Software Engineering',
+        'instructor': 'Prof. J. Doe',
+        'day': 'Tuesday',
+        'start_time': '11:00',
+        'end_time': '12:30',
+        'room': 'LH2',
+    },
 ]
+
+
+def _load_timetable() -> list[TimetableItem]:
+    return [TimetableItem(**item) for item in load_json_list(_STORAGE_FILE, _DEFAULT_TIMETABLE)]
+
+
+def _persist_timetable() -> None:
+    save_json_list(_STORAGE_FILE, [item.dict() for item in _DEMO_TIMETABLE])
+
+
+_DEMO_TIMETABLE = _load_timetable()
 
 
 def _next_id() -> int:
@@ -49,6 +63,7 @@ async def create_timetable_item(item: TimetableItem):
         room=item.room,
     )
     _DEMO_TIMETABLE.append(stored)
+    _persist_timetable()
     return stored
 
 

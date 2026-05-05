@@ -65,7 +65,10 @@ class TimetableRepository {
   /// Add a new timetable item locally so it appears immediately offline-first.
   Future<Result<TimetableItem>> addTimetableItem(TimetableItem item) async {
     try {
-      await timetableDao.insertItems([item]);
+      final insertedId = await timetableDao.insertItem(item);
+      if (insertedId <= 0) {
+        throw StateError('Timetable insert returned invalid id');
+      }
       await syncQueueDao.enqueue(
         kind: 'timetable',
         payload: jsonEncode({
@@ -78,6 +81,8 @@ class TimetableRepository {
           'room': item.room,
         }),
       );
+      // ignore: avoid_print
+      print('TimetableRepository.addTimetableItem saved id: $insertedId');
       return Success(item);
     } catch (e) {
       return Failure(UnknownException(message: 'Error adding timetable item: ${e.toString()}'));

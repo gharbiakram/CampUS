@@ -1,40 +1,54 @@
 from fastapi import APIRouter, HTTPException, status
+
 from ..models.event import Event, EventListResponse
+from ..utils.persistent_store import load_json_list, save_json_list
 
 router = APIRouter(
     prefix="/api/events",
     tags=["events"],
 )
 
-_DEMO_EVENTS = [
-    Event(
-        id=1,
-        title="Guest Lecture: Mobile Security",
-        description="A guest lecture on mobile security best practices.",
-        location="Lecture Hall A",
-        date="2026-05-10",
-        start_time="14:00",
-        end_time="15:30",
-    ),
-    Event(
-        id=2,
-        title="Hackathon Kickoff",
-        description="Start of the 24-hour campus hackathon.",
-        location="Innovation Lab",
-        date="2026-05-15",
-        start_time="09:00",
-        end_time="09:30",
-    ),
-    Event(
-        id=3,
-        title="Career Fair",
-        description="Meet employers and learn about internships.",
-        location="Main Atrium",
-        date="2026-05-20",
-        start_time="10:00",
-        end_time="16:00",
-    ),
+_STORAGE_FILE = 'events.json'
+_DEFAULT_EVENTS = [
+    {
+        'id': 1,
+        'title': 'Guest Lecture: Mobile Security',
+        'description': 'A guest lecture on mobile security best practices.',
+        'location': 'Lecture Hall A',
+        'date': '2026-05-10',
+        'start_time': '14:00',
+        'end_time': '15:30',
+    },
+    {
+        'id': 2,
+        'title': 'Hackathon Kickoff',
+        'description': 'Start of the 24-hour campus hackathon.',
+        'location': 'Innovation Lab',
+        'date': '2026-05-15',
+        'start_time': '09:00',
+        'end_time': '09:30',
+    },
+    {
+        'id': 3,
+        'title': 'Career Fair',
+        'description': 'Meet employers and learn about internships.',
+        'location': 'Main Atrium',
+        'date': '2026-05-20',
+        'start_time': '10:00',
+        'end_time': '16:00',
+    },
 ]
+
+
+def _load_events() -> list[Event]:
+    return [Event(**item) for item in load_json_list(_STORAGE_FILE, _DEFAULT_EVENTS)]
+
+
+def _persist_events() -> None:
+    save_json_list(_STORAGE_FILE, [event.dict() for event in _DEMO_EVENTS])
+
+
+_DEMO_EVENTS = _load_events()
 
 
 def _next_id() -> int:
@@ -58,6 +72,7 @@ async def create_event(event: Event):
         end_time=event.end_time,
     )
     _DEMO_EVENTS.append(stored)
+    _persist_events()
     return stored
 
 

@@ -1,53 +1,67 @@
 from fastapi import APIRouter, HTTPException, status
+
 from ..models.announcement import Announcement, AnnouncementListResponse
+from ..utils.persistent_store import load_json_list, save_json_list
 
 router = APIRouter(
     prefix="/api/announcements",
     tags=["announcements"],
 )
 
-_DEMO_ANNOUNCEMENTS = [
-    Announcement(
-        id=1,
-        title="Midterm Exam Schedule Published",
-        content="The midterm exam schedule is now available. Please check your department board for room assignments.",
-        author="Academic Affairs",
-        priority="high",
-        created_at="2026-04-19T09:00:00Z",
-    ),
-    Announcement(
-        id=2,
-        title="Library Extended Hours",
-        content="Main library will remain open until 11:00 PM during exam week.",
-        author="Campus Library",
-        priority="medium",
-        created_at="2026-04-18T13:30:00Z",
-    ),
-    Announcement(
-        id=3,
-        title="Parking Lot C Maintenance",
-        content="Parking Lot C will be partially closed on Wednesday for line repainting.",
-        author="Campus Services",
-        priority="low",
-        created_at="2026-04-17T07:45:00Z",
-    ),
-    Announcement(
-        id=4,
-        title="New Shuttle Route",
-        content="A new shuttle route now connects the Engineering Block and Dormitory East every 20 minutes.",
-        author="Transportation Office",
-        priority="medium",
-        created_at="2026-04-16T10:15:00Z",
-    ),
-    Announcement(
-        id=5,
-        title="Emergency Drill This Friday",
-        content="A campus-wide emergency evacuation drill will take place Friday at 2:00 PM.",
-        author="Campus Safety",
-        priority="high",
-        created_at="2026-04-15T08:20:00Z",
-    ),
+_STORAGE_FILE = 'announcements.json'
+_DEFAULT_ANNOUNCEMENTS = [
+    {
+        'id': 1,
+        'title': 'Midterm Exam Schedule Published',
+        'content': 'The midterm exam schedule is now available. Please check your department board for room assignments.',
+        'author': 'Academic Affairs',
+        'priority': 'high',
+        'created_at': '2026-04-19T09:00:00Z',
+    },
+    {
+        'id': 2,
+        'title': 'Library Extended Hours',
+        'content': 'Main library will remain open until 11:00 PM during exam week.',
+        'author': 'Campus Library',
+        'priority': 'medium',
+        'created_at': '2026-04-18T13:30:00Z',
+    },
+    {
+        'id': 3,
+        'title': 'Parking Lot C Maintenance',
+        'content': 'Parking Lot C will be partially closed on Wednesday for line repainting.',
+        'author': 'Campus Services',
+        'priority': 'low',
+        'created_at': '2026-04-17T07:45:00Z',
+    },
+    {
+        'id': 4,
+        'title': 'New Shuttle Route',
+        'content': 'A new shuttle route now connects the Engineering Block and Dormitory East every 20 minutes.',
+        'author': 'Transportation Office',
+        'priority': 'medium',
+        'created_at': '2026-04-16T10:15:00Z',
+    },
+    {
+        'id': 5,
+        'title': 'Emergency Drill This Friday',
+        'content': 'A campus-wide emergency evacuation drill will take place Friday at 2:00 PM.',
+        'author': 'Campus Safety',
+        'priority': 'high',
+        'created_at': '2026-04-15T08:20:00Z',
+    },
 ]
+
+
+def _load_announcements() -> list[Announcement]:
+    return [Announcement(**item) for item in load_json_list(_STORAGE_FILE, _DEFAULT_ANNOUNCEMENTS)]
+
+
+def _persist_announcements() -> None:
+    save_json_list(_STORAGE_FILE, [announcement.dict() for announcement in _DEMO_ANNOUNCEMENTS])
+
+
+_DEMO_ANNOUNCEMENTS = _load_announcements()
 
 
 def _next_id() -> int:
@@ -70,6 +84,7 @@ async def create_announcement(announcement: Announcement):
         created_at=announcement.created_at,
     )
     _DEMO_ANNOUNCEMENTS.append(stored)
+    _persist_announcements()
     return stored
 
 

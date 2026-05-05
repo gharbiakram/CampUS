@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 
 import '../services/event_provider.dart';
 import '../models/event.dart';
-import '../services/event_notes_provider.dart';
 import 'event_notes_screen.dart';
 
 class EventsScreen extends StatefulWidget {
@@ -78,10 +77,7 @@ class _EventsScreenState extends State<EventsScreen> {
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (_) => ChangeNotifierProvider(
-                              create: (_) => EventNotesProvider(),
-                              child: EventNotesScreen(event: event),
-                            ),
+                            builder: (_) => EventNotesScreen(event: event),
                           ),
                         );
                       },

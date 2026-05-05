@@ -1,0 +1,29 @@
+[
+  {
+    "id": 1,
+    "title": "Guest Lecture: Mobile Security",
+    "description": "A guest lecture on mobile security best practices.",
+    "location": "Lecture Hall A",
+    "date": "2026-05-10",
+    "start_time": "14:00",
+    "end_time": "15:30"
+  },
+  {
+    "id": 2,
+    "title": "Hackathon Kickoff",
+    "description": "Start of the 24-hour campus hackathon.",
+    "location": "Innovation Lab",
+    "date": "2026-05-15",
+    "start_time": "09:00",
+    "end_time": "09:30"
+  },
+  {
+    "id": 3,
+    "title": "Career Fair",
+    "description": "Meet employers and learn about internships.",
+    "location": "Main Atrium",
+    "date": "2026-05-20",
+    "start_time": "10:00",
+    "end_time": "16:00"
+  }
+]

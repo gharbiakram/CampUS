@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "subject": "Mobile Security",
+    "instructor": "Dr. A. Smith",
+    "day": "Monday",
+    "start_time": "09:00",
+    "end_time": "10:30",
+    "room": "LH1"
+  },
+  {
+    "id": 2,
+    "subject": "Software Engineering",
+    "instructor": "Prof. J. Doe",
+    "day": "Tuesday",
+    "start_time": "11:00",
+    "end_time": "12:30",
+    "room": "LH2"
+  }
+]

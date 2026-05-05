@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// SQLite database initialization and management
 class AppDatabase {
@@ -163,26 +166,82 @@ class AppDatabase {
     await db.delete(preferences);
     await db.delete(syncQueue);
   }
+
+  static List<Map<String, dynamic>> normalizeRows(dynamic rows) {
+    final raw = List.from(rows as List);
+    final normalized = <Map<String, dynamic>>[];
+    for (final row in raw) {
+      if (row is Map) {
+        normalized.add(Map<String, dynamic>.from(Map.castFrom(row)));
+      }
+    }
+    return normalized;
+  }
 }
 
 class _InMemoryDb {
+  static const String _storageKey = 'smartcampus_web_db_v1';
+
   final Map<String, List<Map<String, dynamic>>> _tables = {};
   int _autoId = 1;
+  bool _loaded = false;
+
+  Future<void> _ensureLoaded() async {
+    if (_loaded) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_storageKey);
+    if (raw != null && raw.isNotEmpty) {
+      final decoded = jsonDecode(raw) as Map<String, dynamic>;
+      final tables = decoded['tables'] as Map<String, dynamic>?;
+      if (tables != null) {
+        _tables.clear();
+        for (final entry in tables.entries) {
+          final rows = entry.value as List<dynamic>?;
+          _tables[entry.key] = rows == null ? [] : AppDatabase.normalizeRows(rows);
+        }
+      }
+      _autoId = (decoded['autoId'] as int?) ?? _autoId;
+    }
+
+    _loaded = true;
+  }
+
+  Future<void> _persist() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      _storageKey,
+      jsonEncode({
+        'tables': _tables,
+        'autoId': _autoId,
+      }),
+    );
+  }
+
+  void _validateRow(Map<String, dynamic> row) {
+    if (!row.containsKey('id')) {
+      throw StateError('Row is missing id');
+    }
+  }
 
   Future<int> insert(String table, Map<String, dynamic> values, {ConflictAlgorithm? conflictAlgorithm}) async {
+    await _ensureLoaded();
     final t = _tables.putIfAbsent(table, () => []);
     final row = Map<String, dynamic>.from(values);
     if (!row.containsKey('id')) row['id'] = _autoId++;
+    _validateRow(row);
     final idx = t.indexWhere((r) => r['id'] == row['id']);
     if (idx >= 0) {
       t[idx] = row;
     } else {
       t.add(row);
     }
+    await _persist();
     return row['id'] as int;
   }
 
   Future<List<Map<String, dynamic>>> query(String table, {String? where, List<Object?>? whereArgs, String? orderBy, int? limit}) async {
+    await _ensureLoaded();
     final list = _tables[table] ?? [];
     Iterable<Map<String, dynamic>> results = list;
     if (where != null && whereArgs != null && whereArgs.isNotEmpty) {
@@ -225,22 +284,26 @@ class _InMemoryDb {
   }
 
   Future<int> delete(String table, {String? where, List<Object?>? whereArgs}) async {
+    await _ensureLoaded();
     final list = _tables.putIfAbsent(table, () => []);
     if (where == null) {
       final count = list.length;
       _tables[table] = [];
+      await _persist();
       return count;
     }
     if (where.contains('id = ?') && whereArgs != null && whereArgs.isNotEmpty) {
       final id = whereArgs.first;
       final before = list.length;
       list.removeWhere((r) => r['id'] == id);
+      await _persist();
       return before - list.length;
     }
     return 0;
   }
 
   Future<List<Map<String, dynamic>>> rawQuery(String sql) async {
+    await _ensureLoaded();
     final m = RegExp(r'FROM\s+([a-zA-Z0-9_]+)', caseSensitive: false).firstMatch(sql);
     if (m != null) {
       final table = m.group(1)!;

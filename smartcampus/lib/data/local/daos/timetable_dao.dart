@@ -31,6 +31,25 @@ class TimetableDao {
     }
   }
 
+  Future<int> insertItem(TimetableItem item) async {
+    final database = await db.dbClient;
+    final now = DateTime.now().toIso8601String();
+    return await database.insert(
+      AppDatabase.timetable,
+      {
+        'id': item.id,
+        'subject': item.subject,
+        'instructor': item.instructor,
+        'day': item.day,
+        'start_time': item.startTime,
+        'end_time': item.endTime,
+        'room': item.room,
+        'synced_at': now,
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
   /// Get all timetable items
   Future<List<TimetableItem>> getAllItems() async {
     final database = await db.dbClient;
@@ -39,7 +58,7 @@ class TimetableDao {
       orderBy: 'day ASC, start_time ASC',
     );
 
-    return maps.map((m) => TimetableItem.fromMap(m)).toList();
+    return AppDatabase.normalizeRows(maps).map(TimetableItem.fromMap).toList();
   }
 
   /// Get timetable items by day
@@ -52,7 +71,7 @@ class TimetableDao {
       orderBy: 'start_time ASC',
     );
 
-    return maps.map((m) => TimetableItem.fromMap(m)).toList();
+    return AppDatabase.normalizeRows(maps).map(TimetableItem.fromMap).toList();
   }
 
   /// Delete all timetable items

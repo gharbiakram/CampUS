@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/local/daos/timetable_dao.dart';
 import '../data/local/db/app_database.dart';
@@ -56,8 +57,15 @@ class TimetableProvider extends ChangeNotifier {
     final result = await _repo.addTimetableItem(item);
     return result.fold(
       (failure) {
-        _error = 'Could not add timetable entry. ${failure.toString()}';
+        final msg = 'Could not add timetable entry. ${failure.toString()}';
+        _error = msg;
         notifyListeners();
+        // store debug info asynchronously (non-blocking)
+        SharedPreferences.getInstance().then((prefs) {
+          prefs.setString('smartcampus_last_error', msg);
+        }).catchError((_) {});
+        // ignore: avoid_print
+        print('TimetableProvider.addItem error: ${failure.toString()}');
         return false;
       },
       (value) {
